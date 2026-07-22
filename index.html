@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>導航網站</title>
+    <style>
+        :root {
+            --primary-color: #399dff;
+            --bg-overlay: rgba(0, 0, 0, 0.3);
+            --card-bg: rgba(255, 255, 255, 0.15);
+            --card-hover-bg: rgba(255, 255, 255, 0.3);
+            --text-color: #ffffff;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: #2c3e50; /* Fallback */
+            background-image: url('web/public/background.webp');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: var(--bg-overlay);
+            z-index: 1;
+        }
+
+        #app {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            padding-top: 80px;
+        }
+
+        /* Menu Bar */
+        .menu-bar {
+            position: fixed;
+            top: 1rem;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            padding: 0 1rem;
+            z-index: 100;
+            box-sizing: border-box;
+        }
+
+        .menu-item {
+            position: relative;
+        }
+
+        .menu-bar button {
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-size: 16px;
+            font-weight: 500;
+            padding: 0.8rem 2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            position: relative;
+        }
+
+        .menu-bar button:hover, .menu-bar button.active {
+            color: var(--primary-color);
+            transform: translateY(-1px);
+        }
+
+        .menu-bar button.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 20%;
+            width: 60%;
+            height: 2px;
+            background: var(--primary-color);
+        }
+
+        .sub-menu {
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
+            border-radius: 6px;
+            min-width: 120px;
+            display: none;
+            z-index: 1000;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .menu-item:hover .sub-menu {
+            display: block;
+        }
+
+        .sub-menu-item {
+            display: block;
+            width: 100%;
+            text-align: center;
+            padding: 0.4rem 1rem;
+            border: none;
+            background: transparent;
+            color: #fff;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .sub-menu-item:hover {
+            background: rgba(57, 157, 255, 0.25);
+            color: var(--primary-color);
+        }
+
+        /* Search Section */
+        .search-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem 0;
+            gap: 10px;
+        }
+
+        .search-engine-select {
+            display: flex;
+            gap: 5px;
+        }
+
+        .engine-btn {
+            border: none;
+            background: none;
+            color: #fff;
+            font-size: 0.8rem;
+            padding: 2px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .engine-btn.active, .engine-btn:hover {
+            color: var(--primary-color);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .search-container {
+            display: flex;
+            align-items: center;
+            background: rgba(179, 183, 184, 0.23);
+            border-radius: 20px;
+            padding: 0.3rem;
+            backdrop-filter: blur(10px);
+            max-width: 480px;
+            width: 92%;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .search-input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            padding: 0.2rem 0.5rem;
+            font-size: 1.2rem;
+            color: #fff;
+            outline: none;
+        }
+
+        .search-btn {
+            background: transparent;
+            color: #fff;
+            border: none;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background 0.2s;
+        }
+
+        .search-btn:hover {
+            background: #3367d6;
+        }
+
+        /* Card Grid */
+        .container {
+            max-width: 55rem;
+            margin: 0 auto;
+            width: 100%;
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 15px;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .link-item {
+            background-color: var(--card-bg);
+            border-radius: 15px;
+            height: 85px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.2s;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .link-item:hover {
+            background-color: var(--card-hover-bg);
+            transform: translateY(-2px);
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+        }
+
+        .link-item a {
+            text-decoration: none;
+            color: #fff;
+            font-weight: 500;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            padding: 0;
+        }
+
+        .link-icon {
+            width: 25px;
+            height: 25px;
+            margin-bottom: 4px;
+            object-fit: contain;
+        }
+
+        .link-text {
+            font-size: 14px;
+            text-align: center;
+            word-break: break-all;
+            max-width: 90%;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            line-height: 1.2;
+        }
+
+        .footer {
+            margin-top: auto;
+            text-align: center;
+            padding: 2rem 0;
+        }
+
+        .footer-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 50px;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+        }
+
+        @media (max-width: 1200px) { .container { grid-template-columns: repeat(4, 1fr); } }
+        @media (max-width: 768px) { 
+            .container { grid-template-columns: repeat(3, 1fr); } 
+            .menu-bar button { font-size: 14px; padding: .4rem .8rem; }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <nav class="menu-bar" id="menuBar"></nav>
+        
+        <div class="search-section">
+            <div class="search-engine-select" id="engineSelect"></div>
+            <div class="search-container">
+                <input type="text" id="searchInput" class="search-input" placeholder="搜尋...">
+                <button id="searchBtn" class="search-btn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <div class="container" id="cardGrid"></div>
+
+        <footer class="footer">
+            <div class="footer-content">
+                <p>Copyright © 2025 Nav-Item | Powered by eooce</p>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        const sitesData = {
+            "categories": {
+                "Most Visited": {
+                    "isHidden": false,
+                    "links": [
+                        { "name": "SearXNG", "url": "https://s.itools.dedyn.io", "tips": "Private Search" },
+                        { "name": "Google", "url": "https://www.google.com/ncr", "tips": "Google Search" },
+                        { "name": "Cloudflare", "url": "https://www.cloudflare.com", "tips": "CDN" },
+                        { "name": "IT Tools", "url": "https://mtools.qzz.io", "tips": "100 Online Tools" },
+                        { "name": "Shorten Url", "url": "https://dict.de5.net/", "tips": "Shorten your URL" },
+                        { "name": "GH Bypass", "url": "https://gh.mtools.qzz.io/", "tips": "Github Bypass" }
+                    ]
+                },
+                "MultiMedia": {
+                    "isHidden": false,
+                    "links": [
+                        { "name": "Kvideo", "url": "https://siumo.de5.net" },
+                        { "name": "Ouonnki TV", "url": "https://tv.auto.theworkpc.com/" },
+                        { "name": "MoonTV Plus", "url": "https://aptv.netlify.app/" },
+                        { "name": "Luna TV", "url": "https://tv.res.dedyn.io/" },
+                        { "name": "MTV PLUS", "url": "https://m.tvhub.dedyn.io/" },
+                        { "name": "Luna TV", "url": "https://tvagg.netlify.app/" },
+                        { "name": "Youtube", "url": "https://youtube.com" },
+                        { "name": "Tubi", "url": "https://tubitv.com" },
+                        { "name": "Pluto", "url": "https://pluto.tv" },
+                        { "name": "TV BAK1", "url": "https://tv.pack.dedyn.io/" },
+                        { "name": "TV BAK2", "url": "https://hubtv.netlify.app/" },
+                        { "name": "Music", "url": "https://music.mtools.qzz.io/" }
+                    ]
+                },
+                "Tools": {
+                    "isHidden": false,
+                    "links": [
+                        { "name": "IP Checker", "url": "https://ipfromall.netlify.app/" },
+                        { "name": "Webssh", "url": "https://webssh-6y5w.onrender.com/" },
+                        { "name": "PDF Tools", "url": "https://pdf.res.dedyn.io" },
+                        { "name": "PDF Tools 2", "url": "https://pdfed.pages.dev/en/" },
+                        { "name": "EdgeSUB", "url": "https://suv.sirun.gleeze.com/" },
+                        { "name": "UltraSUB", "url": "https://ultrasub.frii.site/" },
+                        { "name": "NAT64 Checker", "url": "https://pip64.pack.dedyn.io/" },
+                        { "name": "PROXYIP Checker", "url": "https://pip.pack.dedyn.io/" },
+                        { "name": "Code Server", "url": "https://onlinecodes.onrender.com/" },
+                        { "name": "DEV Tools", "url": "https://devonline.netlify.app/" },
+                        { "name": "Photo compress", "url": "https://lorette-e3lxzzfx83.dcdeploy.cloud/" },
+                        { "name": "Formats Converter", "url": "https://con.zeabur.app/", "tips": "1000+格式轉換" }
+                    ]
+                },
+                "Mail": {
+                    "isHidden": false,
+                    "links": [
+                        { "name": "Proton Mail", "url": "https://proton.me/" },
+                        { "name": "Tuta", "url": "https://app.tuta.com/" },
+                        { "name": "Temp mail 24H", "url": "https://mail.dogbro.site" },
+                        { "name": "xyz mail", "url": "https://tmail.230603.xyz/" },
+                        { "name": "Cloud Mail", "url": "https://mail.mtools.qzz.io/" }
+                    ]
+                },
+                "AI": {
+                    "isHidden": false,
+                    "links": [
+                        { "name": "Workers AI Chat", "url": "https://chat.siumo.de5.net/" },
+                        { "name": "tts", "url": "https://tts.mtools.qzz.io/", "tips": "Text to Speech" },
+                        { "name": "Photo Compress", "url": "https://imgdoccompress.onrender.com/" },
+                        { "name": "Wiki English", "url": "https://sirzmkk-chat.hf.space/" },
+                        { "name": "WIKI ZH", "url": "https://chizk-gpt.hf.space/" },
+                        { "name": "Translator", "url": "https://shatau-translate.hf.space/" },
+                        { "name": "WEBUI smg", "url": "https://smgkz-webui.hf.space/" },
+                        { "name": "CODING Derek", "url": "https://derekib-coding.hf.space/" },
+                        { "name": "Nano Code", "url": "https://inchey-coder.hf.space/" },
+                        { "name": "opt", "url": "https://shutajb-opt.hf.space/" },
+                        { "name": "LLM Gateway", "url": "https://llmgateway-seven.vercel.app/" }
+                    ]
+                },
+                "Photos": {
+                    "isHidden": false,
+                    "links": [
+                        { "name": "Funny Bar", "url": "https://funnybar.netlify.app/" }
+                    ]
+                },
+                "Safe": {
+                    "isHidden": false,
+                    "links": [
+                        { "name": "Node Warden", "url": "https://safe.transf.workers.dev/" },
+                        { "name": "DOH Workers", "url": "https://noop.de5.net/" }
+                    ]
+                },
+                "News & RSS": {
+                    "isHidden": false,
+                    "links": [
+                        { "name": "RSSHUB", "url": "https://rss.auto.theworkpc.com/", "tips": "RSSHUB Docker" },
+                        { "name": "Daily news", "url": "https://lovedog.loseyourip.com/" },
+                        { "name": "AI RSS News", "url": "https://rss.oho.dedyn.io/" }
+                    ]
+                }
+            }
+        };
+
+        const searchEngines = [
+            { name: 'google', label: 'Google', placeholder: 'Google 搜尋...', url: q => `https://www.google.com/search?q=${encodeURIComponent(q)}` },
+            { name: 'duckduckgo', label: 'DuckDuckGo', placeholder: 'DuckDuckGo 搜尋...', url: q => `https://duckduckgo.com/?q=${encodeURIComponent(q)}` },
+            { name: 'bing', label: 'Bing', placeholder: 'Bing 搜尋...', url: q => `https://www.bing.com/search?q=${encodeURIComponent(q)}` },
+            { name: 'github', label: 'GitHub', placeholder: 'GitHub 搜尋...', url: q => `https://github.com/search?q=${encodeURIComponent(q)}&type=repositories` }
+        ];
+
+        let currentEngine = searchEngines[0];
+        let activeCategory = Object.keys(sitesData.categories)[0];
+
+        function init() {
+            renderMenus();
+            renderEngines();
+            renderCards(activeCategory);
+            
+            document.getElementById('searchBtn').onclick = () => {
+                const q = document.getElementById('searchInput').value;
+                if (q) window.open(currentEngine.url(q), '_blank');
+            };
+        }
+
+        function renderMenus() {
+            const menuBar = document.getElementById('menuBar');
+            const categories = Object.keys(sitesData.categories);
+            categories.forEach(cat => {
+                const btn = document.createElement('button');
+                btn.textContent = cat;
+                btn.className = cat === activeCategory ? 'active' : '';
+                btn.onclick = () => {
+                    activeCategory = cat;
+                    document.querySelectorAll('.menu-bar button').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    renderCards(cat);
+                };
+                const div = document.createElement('div');
+                div.className = 'menu-item';
+                div.appendChild(btn);
+                menuBar.appendChild(div);
+            });
+        }
+
+        function renderEngines() {
+            const engineSelect = document.getElementById('engineSelect');
+            searchEngines.forEach(eng => {
+                const btn = document.createElement('button');
+                btn.textContent = eng.label;
+                btn.className = eng.name === currentEngine.name ? 'active' : '';
+                btn.onclick = () => {
+                    currentEngine = eng;
+                    document.querySelectorAll('.engine-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    document.getElementById('searchInput').placeholder = eng.placeholder;
+                };
+                engineSelect.appendChild(btn);
+            });
+            document.getElementById('searchInput').placeholder = currentEngine.placeholder;
+        }
+
+        function renderCards(category) {
+            const grid = document.getElementById('cardGrid');
+            grid.innerHTML = '';
+            const links = sitesData.categories[category].links;
+            links.forEach(link => {
+                const item = document.createElement('div');
+                item.className = 'link-item';
+                
+                let iconUrl = 'web/public/default-favicon.png';
+                try {
+                    const url = new URL(link.url);
+                    iconUrl = url.origin + '/favicon.ico';
+                } catch(e) {}
+
+                item.innerHTML = `
+                    <a href="${link.url}" target="_blank" title="${link.tips || ''}">
+                        <img class="link-icon" src="${iconUrl}" onerror="this.src='web/public/default-favicon.png'">
+                        <span class="link-text">${link.name}</span>
+                    </a>
+                `;
+                grid.appendChild(item);
+            });
+        }
+
+        init();
+    </script>
+</body>
+</html>
