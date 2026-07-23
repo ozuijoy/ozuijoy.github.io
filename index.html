@@ -481,7 +481,7 @@
 
                 item.innerHTML = `
                     <a href="${link.url}" target="_blank" title="${link.tips || ''}">
-                        <img class="link-icon" src="${iconUrl}" onerror="this.src='web/public/default-favicon.png'">
+                        <img class="link-icon" src="${iconUrl}" onerror="this.onerror=null; this.src='web/public/default-favicon.png';">
                         <span class="link-text">${link.name}</span>
                     </a>
                 `;
